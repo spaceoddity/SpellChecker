@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<style>
+	<script src="pixi.dev.js"></script>
+</style>
+<body>
+<script>
+	window.onload = function(){	
+	
+		var stage = new PIXI.Stage();
+		var renderer = new PIXI.WebGLRenderer(100, 100, {transparent: true});
+		var graphics = new PIXI.Graphics();
+		stage.appendChild(graphics);
+		document.body.appendChild(renderer.view);
+
+		graphics.lineStyle(3, 0xff0000, 1);
+		graphics.drawRect(10,10,20,20);
+
+		graphics.lineStyle(3, 0x0000ff, 1);
+		graphics.drawRect(15,15,20,20);
+
+		renderer.render(stage);
+	};
+</script>
+</body>
