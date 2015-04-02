@@ -7,7 +7,10 @@ Game.Load.entered = function() {
 		this.get_html_elements();
 		this.load_menu.css("display","flex");
 		this.expand();
-		Scene.push_scene("main_menu");
+		
+		A.load_assets(function(){
+			Scene.push_scene("main_menu");			
+		})
 };
 		
 Game.Load.obscuring = function() {
@@ -23,7 +26,6 @@ Game.Load.get_html_elements = function() {
 Game.Load.expand = function() {
 	this.viewport.height(this.window.height());
 };
-//TODO: load sounds and images
 //----------------------------------------------------------------------------------	
 
 
@@ -364,6 +366,208 @@ Game.OptionsMenu.save_form = function() {
 
 
 
+//Calibrate Menu Scene--------------------------------------------------------------
+CalibrateMenu = Scene.new_scene("calibrate_menu");
+	
+CalibrateMenu.entered = function(){
+	this.get_html_elements();
+	
+	//create dialog object
+	this.dialog = Object.create(Game.CalibrateDialog).init();
+
+	this.bind_events();
+	this.calibrate_menu.show();
+};
+
+CalibrateMenu.obscuring = function(){
+	this.calibrate_menu.hide();
+};
+
+CalibrateMenu.revealed = function(){
+	this.calibrate_menu.show();
+};
+
+CalibrateMenu.exiting = function(){
+	this.calibrate_menu.hide();
+	this.release_events();		
+};
+
+CalibrateMenu.get_html_elements = function(){
+	this.body = $('body');
+	this.calibrate_menu = $("#calibrate_menu");
+	this.rb_button = $("#cal_rb_button").button();
+	this.pt_button = $("#cal_pt_button").button();
+	this.rg_button = $("#cal_rg_button").button();
+};
+
+CalibrateMenu.bind_events = function(){
+	this.body.on('keyup', function(event){
+		if (event.keyCode === 27) {
+			Scene.pop_scene();
+		}
+	});
+	this.rb_button.on('click', (function(){
+		Scene.push_scene("calibrate_dialog","rb");
+	}).bind(this));
+	this.pt_button.on('click', (function(){
+		Scene.push_scene("calibrate_dialog","pt");
+	}).bind(this));
+	this.rg_button.on('click', (function(){
+		Scene.push_scene("calibrate_dialog","rg");
+	}).bind(this));
+};
+
+CalibrateMenu.release_events = function(){
+	this.body.off('keyup');
+	this.rb_button.off('click');
+	this.pt_button.off('click');
+	this.rg_button.off('click');
+};
+//----------------------------------------------------------------------------------
+
+
+
+//Calibrate Dialog Scene------------------------------------------------------------
+Game.CalibrateDialog = Scene.new_scene("calibrate_dialog");
+	
+Game.CalibrateDialog.entered = function(colors){
+	this.state = undefined;
+	this.fg = undefined;
+	this.bg = undefined;
+	
+	this.get_html_elements();
+	this.dialog.show();
+	this.set_state(colors);
+	this.step_one();
+};
+
+Game.CalibrateDialog.get_html_elements = function(){
+	this.dialog = $("#cal_dialog");
+	this.span = $("#calib_span");
+	this.slider = $("#calib_slider").slider();
+	this.button = $("#cal_button").button();
+	this.canvas = $("#cal_canvas")[0];
+	this.context = this.canvas.getContext('2d');
+};
+
+Game.CalibrateDialog.set_state = function(colors){
+	var states = {
+		rb : {
+			step1 : {
+				minmax : function(){return [0,127];},
+				start : function(){return 127;},
+				bg : function(){return BLUE;},
+				fg : function(result){return [result,result,result];},
+			},
+			step2 : {
+				minmax : function(){return [0,255];},
+				start : function(){return 255;},
+				bg : function(color1){return color1;},
+				fg : function(result){return [result,0,0];},
+				save : function(color1, color2){BLACK=color1; RED=color2;},					
+			},
+		},
+		pt : {
+			step1 : {
+				minmax : function(){return [0,255];},
+				start : function(){return 255;},
+				bg : function(){return GRAY;},
+				fg : function(result){return [result,0,result];},
+			},
+			step2 : {
+				minmax : function(){return [0,255];},
+				start : function(){return 255;},
+				bg : function(){return GRAY;},
+				fg : function(result){return [0,result,result];},
+				save : function(color1, color2){PURPLE = color1; TEAL=color2;},
+			},
+		},
+		rg : {
+		},
+	};
+
+	//set the state depending on which palette was chosen
+	this.state = states[colors];		
+};
+	
+Game.CalibrateDialog.step_one = function(){
+	this.span.html("&nbsp;RED&nbsp;");
+	this.span.css("background","rgb(255,0,0)");
+
+	this.slider.slider("option", {
+		"min" : this.state.step1.minmax()[0],
+		"max" : this.state.step1.minmax()[1],
+		"value" : this.state.step1.start(),
+	});	
+
+	this.fg = this.state.step1.fg;
+	this.bg = this.state.step1.bg;
+	
+	this.button.off("click");
+	this.button.button("option", "label", "Next");
+	this.button.on("click", (function(){
+		this.step1_result = this.state.step1.fg(this.slider.slider("value"));
+		this.step_two();
+	}).bind(this));
+};	
+
+Game.CalibrateDialog.step_two = function(){
+	this.span.html("&nbsp;GREEN/BLUE&nbsp;");
+	this.span.css("background","rgb(0,0,255)");
+
+	this.slider.slider("option", {
+		"min" : this.state.step2.minmax()[0],
+		"max" : this.state.step2.minmax()[1],
+		"value" : this.state.step2.start(),
+	});
+
+	this.bg = this.state.step2.bg;		
+	this.fg = this.state.step2.fg;
+		
+	this.button.off("click");
+	this.button.button("option", "label", "Save");
+	this.button.blur();
+	this.button.on("click", (function(){
+		step2_result = this.state.step2.fg(this.slider.slider("value"));
+		this.state.step2.save(this.step1_result, step2_result);
+		this.dialog.hide();
+		Scene.pop_scene();
+	}).bind(this));	
+};
+
+Game.CalibrateDialog.draw = function(){
+	var ctx = this.context;
+	var canvas = this.canvas;
+	
+	var bg = this.bg(this.step1_result);
+	var fg = this.fg(this.slider.slider("value"))
+	
+	ctx.fillStyle = utilities.RGB(bg);
+	ctx.fillRect(0,0, canvas.width, canvas.height);		
+	
+	ctx.strokeStyle = utilities.RGB(fg);		
+	ctx.beginPath();		
+	ctx.lineWidth = "4";		
+	ctx.rect(35,20,30,30);
+	ctx.rect(335,20,30,30);		
+	ctx.stroke();		
+	
+	ctx.beginPath();
+	ctx.lineWidth = "6";	
+	ctx.rect(95,20,30,30);
+	ctx.rect(275,20,30,30);
+	ctx.stroke();	
+
+	ctx.beginPath();		
+	ctx.lineWidth = "8";		
+	ctx.rect(155,20,30,30);	
+	ctx.rect(215,20,30,30);		
+	ctx.stroke();		
+};
+//----------------------------------------------------------------------------------
+
+
+
 //Level Scene-----------------------------------------------------------------------
 Game.Level = Scene.new_scene("level");
 
@@ -439,6 +643,7 @@ Game.Level.get_html_elements = function(){
 	this.countdown = $("#countdown");
 	this.pause = $("#pause")
 	$("#pause_tabs").tabs();
+	this.info_tab = $("#info_tab");
 	this.hits_graph = $("#hits_graph");
 	this.misses_graph = $("#misses_graph");
 	this.resume_button = $("#resume_button").button().button("enable");
@@ -516,6 +721,36 @@ Game.Level.update_pause = function(){
 	this.hits_graph.empty();
 	this.misses_graph.empty();
 	
+	//set size of pause info tab
+	this.info_tab.width(this.window.width()*0.65);
+	this.info_tab.height(this.window.height()*0.65);
+	
+	//set text of info tab
+	var time = S.GAME_LENGTH.toString() + " min";
+	var hit_num = this.orb.correct_guesses.length;
+	var miss_num = this.orb.incorrect_guesses.length;
+	var hits = "&nbsp;&nbsp;&nbsp;" + U.percentage(hit_num+miss_num, hit_num);
+	var misses = "&nbsp;&nbsp;&nbsp;" + U.percentage(hit_num+miss_num, miss_num);
+	var size = S.ORB_SCALE;
+	var speed = Math.floor(S.ORB_SPEED/S.ORB_SPEED_STEP);
+	var vergence_label = "";
+	var vergence = Math.floor(S.ORB_SEPARATION/S.ORB_SCALE_STEP);
+	if (vergence === 0) {
+		vergence = "";
+	} else if (vergence > 0) {
+		vergence_label = "Convergence";
+	} else if (vergence < 0) {
+		vergence_label = "Divergence";
+		vergence = Math.abs(vergence);
+	}
+	$("#infotime").html(time);
+	$("#infohits").html(hits);
+	$("#infomiss").html(misses);
+	$("#infosize").html(size);
+	$("#infospeed").html(speed);
+	$("#infovergence").html(vergence_label);
+	$("#infovergence2").html(vergence);
+
 	//create new correct hex graph
 	this.create_hex_graph(S.HEX_CORRECT_COLOR,"#hits_graph", this.orb.correct_guesses);
 	
@@ -524,7 +759,7 @@ Game.Level.update_pause = function(){
 };
 
 Game.Level.create_hex_graph = function(color, id, data){
-	//use d3 to create hexbin
+	//use d3 to create hexbin graph of hits and misses
 	var graph_width = this.window.width()*0.65;
 	var graph_height = this.window.height()*0.65;
 	
@@ -550,7 +785,7 @@ Game.Level.create_hex_graph = function(color, id, data){
 
 	var hexbin = d3.hexbin()
 		.size([graph_width, graph_height])
-		.radius(25);
+		.radius(graph_width/20);
 
 	var svg = d3.select(id).append("svg")
 		.attr("width", graph_width)
@@ -581,8 +816,6 @@ Game.Level.create_hex_graph = function(color, id, data){
 		.style("stroke", "gray")
 		.style("fill", "none");			
 };
-//TODO: add other page of pause menu
-//TODO: make hexes proportional to canvas
 //TODO: comment all of the code
 //----------------------------------------------------------------------------------
 
@@ -606,9 +839,10 @@ Game.Orb = {
 		this.outer_width = 	U.testContext.measureText("12345678").width;
 		this.hex_points = this.calculate_hex_points();	
 		
+		//counter variables
 		this.rotation_counter = 0;
-		
 		this.underline_position = 0;
+		this.record_answer = true;
 		
 		//variables for movement
 		this.x_dir = 1;
@@ -846,6 +1080,7 @@ Game.Orb = {
 		
 		this.answer = word[0];
 		this.word = [word[1], word[2]];
+		this.record_answer = true;
 	},
 	
 	set_xy : function(new_x, new_y) {
@@ -858,10 +1093,17 @@ Game.Orb = {
 		if (!this.shaking && !this.pulsating) {
 			if (input === "up" || input === "down") {
 				if ((this.answer === "spelled" && input === "up") || (this.answer === "misspelled" && input === "down")) {
-					this.correct_guesses.push([this.center_x, this.center_y]);
+					if (this.record_answer) {
+						this.correct_guesses.push([this.center_x, this.center_y]);						
+					}
+					A.sounds.correct.play();
 					this.pulsate();
 				} else {
-					this.incorrect_guesses.push([this.center_x, this.center_y]);
+					if (this.record_answer) {
+						this.incorrect_guesses.push([this.center_x, this.center_y]);
+					}
+					this.record_answer = false;
+					A.sounds.incorrect.play();
 					this.shake();
 				}
 			}	
@@ -1004,8 +1246,22 @@ Game.set_default_values = function(){
 	S.set_defaults({ORB_BOUNCE : S.ORB_BOUNCE_VALUES.NORMAL});
 };
 
+Game.set_images_and_sounds = function(){
+	A.add_images({
+		b1 : ["/images/b1.png", function(img){ $("#b1").append(img); }],
+		b2 : ["/images/b2.png", function(img){ $("#b2").append(img); }],
+		b3 : ["/images/b3.png", function(img){ $("#b3").append(img); }],
+	});
+	
+	A.add_sounds({
+		correct : ["/sounds/correct.mp3"],
+		incorrect : ["/sounds/incorrect.mp3"],
+	});
+};
+
 Game.start = function(){
 	this.set_custom_widgets();
 	this.set_default_values();
+	this.set_images_and_sounds();
 	Scene.start("load",S.TICKS);
 };

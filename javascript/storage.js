@@ -11,10 +11,10 @@ var S = {
 		window.localStorage.setItem(key, value);
 	},
 
-	set_defaults : function(args){
+	set_defaults : function(defaults){
 		self = this;
-		for (i in args) {
-			this.defaults[i] = args[i];
+		for (i in defaults) {
+			this.defaults[i] = defaults[i];
 			(function(i){
 				Object.defineProperty(self, i, {
 					configurable : true,

@@ -43,6 +43,11 @@ body {
 	justify-content: space-between; 
 }
 
+.space-around {
+	display: flex;
+	justify-content: space-around;
+}
+
 .bg_canvas {
 	position: absolute;
 	top: 0px;
@@ -209,6 +214,10 @@ body {
 	margin-left: 6px;
 }
 
+#infomiss {
+	margin-bottom: 6px;
+}
+
 .pause_padding {
 	padding: 6px;
 }
@@ -219,6 +228,10 @@ body {
   stroke-width: .5px;
 }
 
-.hexgraph {
+.pause_tab {
 	background: white;
+}
+
+.pause_imp {
+	font-size: 36px;
 }

@@ -37,6 +37,14 @@ var U = {
 	replaceAt : function(string, index, character) {
 		return string.substr(0, index) + character + string.substr(index+character.length);
 	},
+	
+	percentage : function(whole, part) {
+		if (part === 0) {
+			return "0%"
+		} else {
+			return Math.round(part/whole*100).toString() + "%";
+		}
+	},
 };
 
 U.testCanvas = document.createElement("canvas");

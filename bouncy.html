@@ -2,22 +2,22 @@
 <meta charset="utf-8">
 <html>
 	<head>
-		<link rel="stylesheet" href="Aristo.css">
-		<link rel="stylesheet" href="jquery-ui-slider-pips.css">
-		<link rel="stylesheet" href="bouncy.css">
+		<link rel="stylesheet" href="/css/Aristo.css">
+		<link rel="stylesheet" href="/css/jquery-ui-slider-pips.css">
+		<link rel="stylesheet" href="/css/bouncy.css">
 		
-		<script src="jquery-1.11.2.js."></script>
-		<script src="jquery-ui.js"></script>
-		<script src="jquery-ui-slider-pips.js"></script>
-		<script src="d3.js"></script>
-		<script src="hexbin.js"></script>
+		<script src="/javascript/third_party/jquery-1.11.2.js."></script>
+		<script src="/javascript/third_party/jquery-ui.js"></script>
+		<script src="/javascript/third_party/jquery-ui-slider-pips.min.js"></script>
+		<script src="/javascript/third_party/howler.js"></script>
+		<script src="/javascript/third_party/d3.js"></script>
+		<script src="/javascript/third_party/hexbin.js"></script>
 
-		<script src="scene.js"></script>
-		<script src="storage.js"></script>
-		<script src="utilities.js"></script>		
-		<script src="game.js"></script>
-		
-		<script src="calibrate.js"></script>
+		<script src="/javascript/scene.js"></script>
+		<script src="/javascript/storage.js"></script>
+		<script src="/javascript/utilities.js"></script>
+		<script src="/javascript/assets.js"></script>
+		<script src="/javascript/game.js"></script>
 	</head>
 	<body>
 		<div id="viewport" class="column_center">
@@ -63,9 +63,9 @@
 							</div>					
 							<div id="bounce_radio" class="row_center options_radio">
 								<div>Bounce:&nbsp </div>
-								<input type="radio" id="bounce_rad_1" name="bounce_rad"><label for="bounce_rad_1"><img src="b1.png"></label>
-								<input type="radio" id="bounce_rad_2" name="bounce_rad"><label for="bounce_rad_2"><img src="b2.png"></label>
-								<input type="radio" id="bounce_rad_3" name="bounce_rad"><label for="bounce_rad_3"><img src="b3.png"></label>
+								<input type="radio" id="bounce_rad_1" name="bounce_rad"><label for="bounce_rad_1" id="b1"></label>
+								<input type="radio" id="bounce_rad_2" name="bounce_rad"><label for="bounce_rad_2" id="b2"></label>
+								<input type="radio" id="bounce_rad_3" name="bounce_rad"><label for="bounce_rad_3" id="b3"></label>
 							</div>
 						</div>
 					</div>
@@ -99,15 +99,28 @@
 				<div id="pause" class="hidden floating_bg rounded pause_padding">
 					<div id="pause_tabs">
 						<ul>
-							<li><a href="#tabs-1">Hits</a></li>
-							<li><a href="#tabs-2">Misses</a></li>
+							<li><a href="#tabs-1">Info</a></li>
+							<li><a href="#tabs-2">Hits</a></li>
+							<li><a href="#tabs-3">Misses</a></li>
 						</ul>
 						<div id="tabs-1">
-							<div id="hits_graph" class="hexgraph">
+							<div id="info_tab" class="pause_tab column_center">
+								<div>
+									<div class="space-between pause_imp"><b>Hits</b><span id="infohits"></span></div>
+									<div class="space-between pause_imp"><span><b>Misses</b></span><span id="infomiss" ></span></div>
+									<div class="space-between"><span><b>Time</b></span><span id="infotime"></span></div>									
+									<div class="space-between"><span><b>Size</b></span><span id="infosize"></span></div>
+									<div class="space-between"><span><b>Speed</b></span><span id="infospeed"></span></div>	
+									<div class="space-between"><b><span id="infovergence"></span></b><span id="infovergence2"></span></div>									
+								</div>
+							</div>
+						</div>						
+						<div id="tabs-2">
+							<div id="hits_graph" class="pause_tab">
 							</div>
 						</div>
-						<div id="tabs-2">
-							<div id="misses_graph" class="hexgraph">
+						<div id="tabs-3">
+							<div id="misses_graph" class="pause_tab">
 							</div>
 						</div>
 					</div>
