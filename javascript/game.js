@@ -1,4 +1,12 @@
 Game = {};
+//TODO: add instructions
+//TODO: add sound option maybe?
+//TODO: figure out orange calibration
+//TODO: figure out good steps for hex colors, maybe based on 5 minutes of play
+//TODO: check and comment code
+//TODO: put code on github
+//TODO: put code on dreamhost
+
 
 //Load Scene------------------------------------------------------------------------
 Game.Load = Scene.new_scene("load");
@@ -381,10 +389,12 @@ CalibrateMenu.entered = function(){
 
 CalibrateMenu.obscuring = function(){
 	this.calibrate_menu.hide();
+	this.release_events();
 };
 
 CalibrateMenu.revealed = function(){
 	this.calibrate_menu.show();
+	this.bind_events();
 };
 
 CalibrateMenu.exiting = function(){
@@ -398,6 +408,7 @@ CalibrateMenu.get_html_elements = function(){
 	this.rb_button = $("#cal_rb_button").button();
 	this.pt_button = $("#cal_pt_button").button();
 	this.rg_button = $("#cal_rg_button").button();
+	this.back_button = $("#cal_back_button").button();
 };
 
 CalibrateMenu.bind_events = function(){
@@ -406,15 +417,18 @@ CalibrateMenu.bind_events = function(){
 			Scene.pop_scene();
 		}
 	});
-	this.rb_button.on('click', (function(){
+	this.rb_button.on('click', function(){
 		Scene.push_scene("calibrate_dialog","rb");
-	}).bind(this));
-	this.pt_button.on('click', (function(){
+	});
+	this.pt_button.on('click', function(){
 		Scene.push_scene("calibrate_dialog","pt");
-	}).bind(this));
-	this.rg_button.on('click', (function(){
+	});
+	this.rg_button.on('click', function(){
 		Scene.push_scene("calibrate_dialog","rg");
-	}).bind(this));
+	});
+	this.back_button.on('click', function(){
+		Scene.pop_scene();
+	});
 };
 
 CalibrateMenu.release_events = function(){
@@ -422,6 +436,7 @@ CalibrateMenu.release_events = function(){
 	this.rb_button.off('click');
 	this.pt_button.off('click');
 	this.rg_button.off('click');
+	this.back_button.off('click');
 };
 //----------------------------------------------------------------------------------
 
@@ -456,7 +471,7 @@ Game.CalibrateDialog.set_state = function(colors){
 			step1 : {
 				minmax : function(){return [0,127];},
 				start : function(){return 127;},
-				bg : function(){return BLUE;},
+				bg : function(){return S.BLUE;},
 				fg : function(result){return [result,result,result];},
 			},
 			step2 : {
@@ -464,22 +479,22 @@ Game.CalibrateDialog.set_state = function(colors){
 				start : function(){return 255;},
 				bg : function(color1){return color1;},
 				fg : function(result){return [result,0,0];},
-				save : function(color1, color2){BLACK=color1; RED=color2;},					
+				save : function(color1, color2){S.BLACK=color1; S.RED=color2;},					
 			},
 		},
 		pt : {
 			step1 : {
 				minmax : function(){return [0,255];},
 				start : function(){return 255;},
-				bg : function(){return GRAY;},
+				bg : function(){return S.GRAY;},
 				fg : function(result){return [result,0,result];},
 			},
 			step2 : {
 				minmax : function(){return [0,255];},
 				start : function(){return 255;},
-				bg : function(){return GRAY;},
+				bg : function(){return S.GRAY;},
 				fg : function(result){return [0,result,result];},
-				save : function(color1, color2){PURPLE = color1; TEAL=color2;},
+				save : function(color1, color2){S.PURPLE = color1; S.TEAL=color2;},
 			},
 		},
 		rg : {
@@ -542,10 +557,10 @@ Game.CalibrateDialog.draw = function(){
 	var bg = this.bg(this.step1_result);
 	var fg = this.fg(this.slider.slider("value"))
 	
-	ctx.fillStyle = utilities.RGB(bg);
+	ctx.fillStyle = U.RGB(bg);
 	ctx.fillRect(0,0, canvas.width, canvas.height);		
 	
-	ctx.strokeStyle = utilities.RGB(fg);		
+	ctx.strokeStyle = U.RGB(fg);		
 	ctx.beginPath();		
 	ctx.lineWidth = "4";		
 	ctx.rect(35,20,30,30);
@@ -743,6 +758,18 @@ Game.Level.update_pause = function(){
 		vergence_label = "Divergence";
 		vergence = Math.abs(vergence);
 	}
+	var bounce;
+	switch(JSON.stringify(S.ORB_BOUNCE)) {
+		case JSON.stringify(S.ORB_BOUNCE_VALUES.NORMAL):
+			bounce = A.images.b11;
+			break;
+		case JSON.stringify(S.ORB_BOUNCE_VALUES.HORIZONTAL):
+			bounce = A.images.b22;
+			break;
+		case JSON.stringify(S.ORB_BOUNCE_VALUES.VERTICAL):
+			bounce = A.images.b33;
+			break;
+	}
 	$("#infotime").html(time);
 	$("#infohits").html(hits);
 	$("#infomiss").html(misses);
@@ -750,6 +777,8 @@ Game.Level.update_pause = function(){
 	$("#infospeed").html(speed);
 	$("#infovergence").html(vergence_label);
 	$("#infovergence2").html(vergence);
+	$("#infobounce").empty();
+	$("#infobounce").append(bounce);
 
 	//create new correct hex graph
 	this.create_hex_graph(S.HEX_CORRECT_COLOR,"#hits_graph", this.orb.correct_guesses);
@@ -816,7 +845,6 @@ Game.Level.create_hex_graph = function(color, id, data){
 		.style("stroke", "gray")
 		.style("fill", "none");			
 };
-//TODO: comment all of the code
 //----------------------------------------------------------------------------------
 
 
@@ -1182,20 +1210,180 @@ Game.Word = {
 		return split_word;
 	},
 	
-	words : [
-		"staple", "zebra",  "donkey", "shrimp", "turkey", "tiger",  "horse",  "roach",  "sailor", "monkey", "rabbit", "eagle",
-		"beaver", "animal", "woman",  "skunk",  "waiter", "kitten", "shark",  "snake",  "birds",  "daisy",  "people", "bushes",
-		"priest", "whale",  "lizard", "goose",  "snail",  "grass",  "child",  "actor",  "writer", "puppy",  "human",  "parrot",
-		"squid",  "trees",  "doggy",  "doctor", "goats",  "sheep",  "mouse",  "rhino",  "lions",  "bears",  "farmer", "parent",
-		"worms",  "ducks",  "wolves", "walrus", "insect", "beetle", "author", "judge",            "uncle",  "turtle", "frogs",
-		"panda",  "moose",  "oyster", "poodle", "baker",  "lawyer", "jaguar",           "koala",  "llama",  "gopher", "clams",
-		"barber", "nurse",  "gerbil", "falcon", "toads",  "cattle", "hyena",  "bobcat", "coach",  "pirate", "dancer", "hornet",
-		"spider", "baboon", "badger", "coyote", "camel",  "bunny",  "police", "pillow", "table",  "towel",  "shoes",  "knife", 
-		"music",  "phone",  "paper",  "couch",  "socks",  "plate",  "radio",  "clock",  "pencil", "teapot",           "napkin",
-		"butter", "chair",  "candle", "hammer", "pants",  "water",  "cookie", "bottle", "truck",  "string", "spoon",
-		"cream",  "staple", "school", "sphere", "jacket", "steam",  "fridge", "cycle",  "ticket", "burger", "future", "house",
-		"doors",  "glove",  "bagel",  "chalk",  "cloud",  "wallet", "toilet", "silver", "pizza",  "honey",  "games",  "tomato",
-	],
+	words : (function(){
+		var words = 'about above accent accept access accuse across acted acting active actor actors actual adapt adapts ' +
+					'added adding admire admit admits adult adults advice advise affair affect afford afraid after again ' +
+					'agent agents aging agree agreed agrees ahead aided aiding aired airing alarm alarms alive allow ' +
+					'allows almost alone along alters always amaze amazed amazes among amount amuse amused amuses anger ' +
+					'angers angry animal annoy annoys answer anyhow anyone anyway apart appeal appear apply areas argue ' +
+					'argued argues around arrive artist asked asking asleep assist assume assure attach attack attend august ' +
+					'auntie aunts aunty autumn avoid avoids awake awaken awakes aware awful awoke awoken babies backed ' +
+					'backs bacon bagged baked baker bakers bakery bakes baking balled balls banana banded bands banged ' +
+					'bangs banked banker banks barest barks barred based bases basic basics basing basket batted batter ' +
+					'battle beach beans bears beaten beater beauty became become beefy beers before began beggar begged ' +
+					'begin begins begun behind being beings bells belong below belted bends bendy beside better beyond ' +
+					'bigger biked biker bikers bikes biking billed bills binder binds birds biter biters bites biting ' +
+					'bitten bitter black blacks blame blamed blames blank blanks bleed bleeds bless blind blinds block ' +
+					'blocks blocky blond blonde blood bloody bloom blooms blower blown blows blues board boards boated ' +
+					'bodies bodily boiled boiler boils bombed bomber bombs bonded bonds bones books boomed booms booted ' +
+					'bored bores boring borne borrow bossed bosses bossy bother bottle bottom bought bounce bouncy bound ' +
+					'bowed bowing bowled bowler bowls boxes boyish brain brains brainy brake brakes branch brand brands ' +
+					'brave braved braver bread breads break breaks breast breath brick bricks bridge brief briefs bright ' +
+					'bring brings broad broke broken brown browns brush bucked bucket bucks bugged build builds built ' +
+					'bumped bumper bumps bunch burial buried buries burned burner burns burst bursts bushes bushy busier ' +
+					'busily butter button buyer buyers buying cable cables caged cages caging cakes called caller calls ' +
+					'calmed calmer calmly camera camped camper camps canned cannot canoe canoed canoes capes capped cards ' +
+					'career caring carpet carrot carry carts cases cashed castle casts catch catchy caught cause caused ' +
+					'causes cents chain chains chair chairs champ chance change charge charm charms chase chased chaser ' +
+					'chats chatty cheap cheat cheats check checks cheek cheeks cheer cheers cheery cheese chest chests ' +
+					'chewed chewer chews chewy chick chicks chief chiefs child chips choice choose choosy chops chose ' +
+					'chosen church circle cities claim claims class classy clean cleans clear clears clever cliff cliffs ' +
+					'climb climbs clips clock clocks close closed closer closes cloth cloths cloud clouds cloudy clubs ' +
+					'clues coach coasts coffee colder coldly color colors comes coming commit common cooked cooks cooled ' +
+					'cooler cools coped copied copier copies coping corner costly costs cotton cough coughs could count ' +
+					'counts county couple course court courts cousin cover covers crack cracks crash crawl crawls crazy ' +
+					'cream creams creamy credit crept cried crier criers crime crimes crisp crisps crispy cross crowd ' +
+					'crowds crown crowns cruel crying cupped cured curing curled curler curls curly cutter daddy daily ' +
+					'damage dance danced dancer dances danger dared dares daring darken darker darkly dated dates dating ' +
+					'dawned dawns deaden deadly dealer deals dealt dearly death deaths debtor debts decent decide decks ' +
+					'deepen deeper deeply degree demand denial denied denies depend depth depths desert design desire desks ' +
+					'detail detect dieted dieter digger dined diner diners dines dining dinner direct dirty dished dishes ' +
+					'dived diver divers dives divide diving doctor doggie doggy doing doings dollar dolls dolly double ' +
+					'doubly doubt doubts downed dozen dozens dragon drags drama dramas drank drawer drawn draws dream ' +
+					'dreams dreamy dress dried driers dries drink drinks drive driven driver drives drove drugs drums ' +
+					'drunk drunks dryer dryers drying dryly ducked ducks dumped dumps during dusted duster dusts dusty ' +
+					'duties dying earful early earned earner earns earth earths earthy eased eases easier easily easing ' +
+					'eaten eater eaters eating edged edger edges edging edited editor edits effect effort eight eighth ' +
+					'eights eighty either elder elders elect elects eleven email emails empire employ empty ended ending ' +
+					'enemy energy engage engine enjoy enjoys enough enter enters entire equal equals equip equips escape ' +
+					'estate event events exact exams except excite excuse exists expect expose extend extra extras eyeful ' +
+					'eyeing faced faces facing facts failed fails faint faints fairer fairly fairy faith faiths fallen ' +
+					'falls family famous fancy fanned farms faster father fatten fatter fatty fault faults faulty favor ' +
+					'favors feared fears feeder feeds feeler feels fella fellow female fence fenced fences fetch fewer ' +
+					'fewest fields fifth fifths fifty fight fights figure filing filled filler fills filmed films filmy ' +
+					'final finals finder finds finely finer finest finger finish firing firmed firmer firmly first fished ' +
+					'fishes fishy fitted fives fixed fixer fixes fixing flags flame flamed flames flash flatly flight ' +
+					'flips floaty flood floods floor floors flowed flower flown flows flyer flyers flying folded folds ' +
+					'folks follow foods fooled fools force forced forces forest forget forgot formed forms forty fought ' +
+					'found fours fourth foxed foxes foxier foxily frame frames freed freely freeze fresh fridge friend ' +
+					'fright froggy frogs front fronts frost frosts frosty froze frozen fruit fruits fruity fryer fryers ' +
+					'frying fuller fully funded funder funds funny furry future gaily gained gains games gaming garage ' +
+					'garden gases gates gather geared gears gentle gently gents ghost ghosts giant giants gifted gifts ' +
+					'gimme girls girly given giver givers gives giving gladly glance glass glassy glory godly going ' +
+					'golden golfer goner goody gotten govern grace graced graces grade graded grader grades grand grands ' +
+					'grant grants grass grassy great greats green greens grocer ground group groups grower grown grows ' +
+					'growth guard guards guess guest guests guide guided guides guilt guilty habit habits hairs hairy ' +
+					'halls halves handed handle hands handy hanged hanger hangs happen happy harden harder hardly harmed ' +
+					'harms hated hater haters hating hatter haven having headed heads health heaped heaps heard hears ' +
+					'heart hearts heated heater heaven heavy hedge hedged hedges height hello helped helper helps heroes ' +
+					'heroic hidden hider hides hiding higher highly highs hills hilly hired hires hiring hitter hobby ' +
+					'holder holds holed holes homed homes homing honest honey honeys honor honors hooked hooks hoped ' +
+					'hopes hoping horse horses horsey horsy hotel hotels hotly hotter hourly hours house housed houses ' +
+					'hugely human humans hunger hungry hunted hunter hunts hurry icily ideas idiot idiots ignore image ' +
+					'imaged imager images impure income indeed indoor inform injure injury inner inside insist insure intend ' +
+					'intent invite inward island issue issued issuer issues items itself jacket jammed jeans joined joins ' +
+					'joked joker jokers jokes jokey joking joyful joyous judge judged judges juice juices juicy jumped ' +
+					'jumper jumps jumpy junior keeper keeps keyed kicked kicker kicks killed killer kills kinder kindly ' +
+					'kinds kingly kings kissed kisser kisses kneed knees knife knifed knits knives knock knocks known ' +
+					'knows labor labors lacked lacks ladies lakes lambs lamps landed lands lanes large larger lasted ' +
+					'lastly lasts lately latest laugh laughs lawful lawns lawyer laying lazier lazily leader leads league ' +
+					'leaned leaped leaper leaps learn learns least leave leaves lefts legal leggy lender lends length ' +
+					'lessen lesser lesson letter level levels lidded lifted lifter lifts light lights liked likely likes ' +
+					'liking limit limits lined listed listen lists little lived lives living loaded loader loads loaned ' +
+					'loans local locals locate locked locks logged logger lonely loner loners longer looked looker looks ' +
+					'loose loosed loosen looser lorded lords loser losers losing losses louder loudly loved lovely lover ' +
+					'lovers loves loving lower lowers lowest lowly lucky lumped lumps lumpy lunch lying madden madder ' +
+					'madly magic mailed mails mainly major maker makers makes making males mamma manage manly manned ' +
+					'manner mapped march marked marker market marks marry marvel masked masks massed masses master match ' +
+					'mates maths matter maybe meals means meant meats meaty melted melts member memory mental merry ' +
+					'messed messes messy metal metals metric midair midday middle midway might miles milked milks milky ' +
+					'milled miller mills minded minds minor minors minus mirror misled missed misses mister misuse mixed ' +
+					'mixer mixers mixes mixing model models modern moment mommy money monkey month months moods moody ' +
+					'mostly mother motor motors mount mounts mousy mouth mouths mouthy moved mover movers moves movie ' +
+					'movies moving mowed mower mowers mowing muddy mummy murder muscle music musics myself nailed named ' +
+					'namely names naming nanny narrow nasty nation native nature naval nearby neared nearer nearly nears ' +
+					'neater neatly necks needed needs nerve nerves nested nests never newer newest newish newly nicely ' +
+					'nicer night nights nines ninety ninth ninths nobody noise noises noisy normal north nosed noses ' +
+					'nosing noted notes notice noting number nurse nursed nurses oaken object occur occurs odder oddest ' +
+					'oddity oddly offer offers office often oiled oiler oilers oiling older oldest oldie oldies onion ' +
+					'onions opened opener openly opens oppose orange order orders other others ought ovens overly owing ' +
+					'owned owner owners owning packed packer packs pages pained paint paints paired panic panics paper ' +
+					'papers papery pardon parent parked parks partly party passed passer passes pasts patch paths patted ' +
+					'pause paused pauses payed payee payees payer payers paying peace penned penny people period person ' +
+					'phone phoned phones photo photos piano pianos picked picker picks picky piece pieced pieces pigged ' +
+					'piggy piglet piling pines pinker pinky pinned piped pipes piping pitch pitied pities place placed ' +
+					'places plain plane planes planet plans plant plants plate plated plates played player plays please ' +
+					'plenty plugs pocket poetic poetry poets point points pointy poison poles police policy polish polite ' +
+					'pooled poorer poorly popped ports postal posted posts potato potted potter pound pounds poured pours ' +
+					'power powers prayed prayer prays prefer prepay press pretty price priced prices pricey prided prides ' +
+					'prime primed primes prince print prints prison proper proud prove proved proven proves public pulled ' +
+					'pulls pumped pumps punch punish puppy purely purer purest purist purity purple pushed pusher pushes ' +
+					'pushy queen queens quick quits quote quoted quotes rabbit racer racers races radio radios rained ' +
+					'rainy raised range ranged ranges rapid rapids rarely rarer rarity rated rates rather rating ratty ' +
+					'reach react reacts reader reads ready really reason reborn recall recent recipe reckon record redden ' +
+					'redder redone redraw reduce refer refers refill refuse regard region regrow reheat rejoin relate relax ' +
+					'relied relief relies reload remade remain remake remark remind remove rename renew renews rental rented ' +
+					'rents reopen repair repeat replay reply report reread rerun reruns resale reseal resell resold rested ' +
+					'rests result retake retell retire retold retook return reused reuses rices richer riches richly ridden ' +
+					'rider riders rides riding right rights ringed rings ripped risen rises rising risked risks risky ' +
+					'river rivers roads roared roars robbed robber rocks rocky rolled roller rolls roofed roofs rooms ' +
+					'roomy rooted roped ropes rotted rotten rough round rounds rowed rower rowers rowing royal royals ' +
+					'rubbed rudely ruder rudest ruined ruins ruled ruler rulers rules ruling runner runny rushed rushes ' +
+					'sadden sadder sadly safely safer safes safest safety sailed sailor saint saints sakes salad salads ' +
+					'salary sales sanded sander sands sandy sauce sauces saved saver savers saves saving saying scale ' +
+					'scaled scales scare scares scary scene scenes scenic school score scored scorer scores scream screen ' +
+					'screw screws sealed sealer seals search season seated seater seats second secret secure seeded seeds ' +
+					'seeing seeker seeks seemed select seller sells selves sender senior sense series serve served server ' +
+					'serves settle seven sevens sewed sewing shade shaded shades shadow shady shake shaken shaker shakes ' +
+					'shaky shall shame shamed shames shape shaped shaper shapes share shared shares sharp shave shaved ' +
+					'shaven shaver shaves sheds sheep sheet sheets shelf shell shells shelve shift shifts shine shined ' +
+					'shines shiny ships shirt shirts shock shocks shoed shoes shone shook shoot shoots shops short ' +
+					'shots should shout shouts shove shoved shoves showed shower shown shows shuts shyly sicken sicker ' +
+					'sickly sided sides siding sight sights signal simple simply since single singly sinks sister sitter ' +
+					'sixes sixth sixths sixty sized sizes sizing skied skiers skiing skill skills skins skirt skirts ' +
+					'sleep sleeps sleepy slept slide slider slides slight slips slowed slower slowly slows small smart ' +
+					'smarty smash smell smells smelly smile smiled smiles smoke smoked smoker smokes smokey smoky smooth ' +
+					'snake snaked snakes snaps snowed snows snowy social socks soften softer softly soils sonny sooner ' +
+					'sorely sorer sores sorest sorry sorted sorts sought sound sounds soups soupy south space spaced ' +
+					'spacer spaces spare spared speak speaks speech speed speeds speedy spell spells spend spends spent ' +
+					'spins spirit splits spoil spoils spoke spoken sport sports sporty spots spotty sprang spray sprays ' +
+					'spread spring sprung square stable staff staffs stage staged stages stair stairs stamp stamps stand ' +
+					'stands stare stared stares starry start starts starve state stated states stayed stays steady steak ' +
+					'steaks steals steam steams steamy steps stick sticks stiff stiffs still stills stirs stock stocks ' +
+					'stole stolen stone stoned stones stony stood stops store stored storm storms stormy stream street ' +
+					'stress strike string stroke strong struck strung stuck study stuff stupid style styled styles subset ' +
+					'sucked sucks sudden suffer sugar sugars sugary suited suits summer sunken sunned sunny super supply ' +
+					'surely surer surest sweep sweeps sweet sweets swept swims swing swings switch sword swords swore ' +
+					'sworn swung system table tabled tables tailed tails taken taker takers takes taking talked talker ' +
+					'talks taller tanks taped tapes taping tapped taste tasted taster tastes tasty taught taxed taxes ' +
+					'taxied taxing taxis teach teamed teams tears tease teased teases teeth tells tempt tempts tended ' +
+					'tends tense tensed tenses tented tenth tenths tents terms tested tester tests thank thanks their ' +
+					'theirs these thick thief thing things think thinks thinly thins third thirds thirst thirty those ' +
+					'though threat threw throat throw thrown throws ticket tidal tides tight tights timed timely timer ' +
+					'timers times timing tinier tinny tipped tipper tiring title titles toast toasts toasty toilet tomato ' +
+					'tonal toned toner tones tongue toning tooled tools tooth toothy topic topics topped topper total ' +
+					'totals touch tough toured toward towel towels tower towers towns toyed toying trace traced traces ' +
+					'track tracks trade traded trader trades train trains travel trays treat treats trees trick tricks ' +
+					'tricky trips truck trucks truer truest truly trunk trunks trust trusts trusty truth truths tuned ' +
+					'tuner tuners tunes tuning turned turns twelve twenty twice twins twists twisty tying types uglier ' +
+					'unbend unbent unbind unborn uncle uncles uncool uncurl uncut undead undid undoes undone unease uneasy ' +
+					'unfair unfed unfit unfold unhook unhurt union unions units unkind unless unlit unload unlock unmask ' +
+					'unmet unpack unpaid unplug unreal unroll unsafe unseen unsent unsold unsure until untold untrue unused ' +
+					'unwed unwell unwise unworn unwrap upper upset upsets upside useful usual valley value valued values ' +
+					'varied varies veggie victim video videos viewed viewer views visit visits voice voiced voices voted ' +
+					'voter voters votes voting waged wages waging waited wakens wakes waking walked walker walks walled ' +
+					'walls wander wanted wants warmed warmer warmly warms warmth warned warns warred washed washer washes ' +
+					'waste wasted waster wastes watch water waters watery waved waves waving weaken weaker weakly weapon ' +
+					'wearer wears wedded weeded weeds weedy weekly weeks weight weird weirdo wetly wetter wheel wheels ' +
+					'where which while whilst whips white whiten whiter whites whole whose wicked widely widen widens ' +
+					'wider widest width widths wilder wildly wilds willed winded window winds windy winery wines winged ' +
+					'wings wining winner winter wintry wiped wiper wipers wipes wiping wiring wisdom wisely wiser wisest ' +
+					'wished wisher wishes within wives woken wolves woman women wonder wooden woods woody woolen worded ' +
+					'words wordy worked worker works world worlds wormed worms wormy worry worse worsen worthy would ' +
+					'wound wounds write writer writes wrong wrongs wrote yards yearly years yelled yellow yells young ' +
+					'yours zeros';
+		return words.split(" ");
+	})(),
 };
 //----------------------------------------------------------------------------------
 
@@ -1251,6 +1439,10 @@ Game.set_images_and_sounds = function(){
 		b1 : ["/images/b1.png", function(img){ $("#b1").append(img); }],
 		b2 : ["/images/b2.png", function(img){ $("#b2").append(img); }],
 		b3 : ["/images/b3.png", function(img){ $("#b3").append(img); }],
+		b11 : ["/images/b1.png"],
+		b22 : ["/images/b2.png"],
+		b33 : ["/images/b3.png"],
+		menu_bg : ["/images/bg.png", function(){ $(".menu_bg").css('background-image', 'url(' + "/images/bg.png" + ')'); }],
 	});
 	
 	A.add_sounds({

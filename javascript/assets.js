@@ -66,5 +66,4 @@ var A = {
 			this.counter_cb();
 		}
 	},
-	
 };

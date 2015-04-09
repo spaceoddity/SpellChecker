@@ -22,13 +22,19 @@
 	<body>
 		<div id="viewport" class="column_center">
 			<div id="loading" class="column_center hidden">
-				<p>Loading...</p>
+				<div class="plain_bg column_center">
+					<p>Loading...</p>
+				</div>
 			</div>
 			<div id="main_menu" class="column_center hidden">
-				<button id="start_button" type="button">Start</button>
-				<button id="options_button" type="button">Options</button>
-				<button id="calibrate_button" type="button">Calibrate Colors</button>
-				<button id="instructions_button" type="button">Instructions</button>
+				<div class="menu_bg">
+					<div id="menu_buttons" class="column_center">
+						<button id="start_button" type="button">Start</button>
+						<button id="options_button" type="button">Options</button>
+						<button id="calibrate_button" type="button">Calibrate Colors</button>
+						<button id="instructions_button" type="button">Instructions</button>
+					</div>
+				</div>
 			</div>
 			<div id="options_menu" class="column_center hidden">
 				<canvas id="options_canvas" class="bg_canvas"></canvas>
@@ -76,21 +82,33 @@
 				</div>
 			</div>
 			<div id="calibrate_menu" class="hidden">
-				<button id="cal_rb_button" type="button"><div class="rb_button"></div></button>
-				<button id="cal_pt_button" type="button"><div class="pt_button"></div></button>
-				<button id="cal_rg_button" type="button"><div class="rg_button"></div></button>
+				<div class="menu_bg">
+					<div id="calibrate_buttons" class="column_center">
+						<div class="row_center">
+							<button id="cal_rb_button" type="button"><div class="rb_button"></div></button>
+							<button id="cal_pt_button" type="button"><div class="pt_button"></div></button>
+							<button id="cal_rg_button" type="button"><div class="rg_button"></div></button>
+						</div>
+						<div>
+							<button id="cal_back_button" type="button">Back</button>
+						</div>					
+					</div>
+
+				</div>
 			</div>
-			<div id="cal_dialog" title="Calibrate" class="column_center hidden">
-				<div class="column_center">				
-					<div class="column_center">
-						<div>Look through the <span id="calib_span"></span> lens.</div>
-						<div>Adjust the slider until the squares disappear.</div>
+			<div id="cal_dialog" class="column_center hidden">
+				<div class="plain_bg column_center">
+					<div id="cal_dialog_square" class="column_center">				
+						<div class="column_center">
+							<div>Look through the <span id="calib_span"></span> lens.</div>
+							<div>Adjust the slider until the squares disappear.</div>
+						</div>
+						<div class="column_center">
+							<canvas id="cal_canvas" width=400 height=72></canvas>
+							<div id="calib_slider"></div>
+						</div>
+						<button id="cal_button" type="button"></button>
 					</div>
-					<div class="column_center">
-						<canvas id="cal_canvas" width=400 height=72></canvas>
-						<div id="calib_slider"></div>
-					</div>
-					<button id="cal_button" type="button"></button>
 				</div>
 			</div>
 			<div id="level" class="hidden column_center">
@@ -106,12 +124,13 @@
 						<div id="tabs-1">
 							<div id="info_tab" class="pause_tab column_center">
 								<div>
-									<div class="space-between pause_imp"><b>Hits</b><span id="infohits"></span></div>
+									<div class="space-between pause_very_imp"><b>Hits</b><span id="infohits"></span></div>
 									<div class="space-between pause_imp"><span><b>Misses</b></span><span id="infomiss" ></span></div>
 									<div class="space-between"><span><b>Time</b></span><span id="infotime"></span></div>									
 									<div class="space-between"><span><b>Size</b></span><span id="infosize"></span></div>
 									<div class="space-between"><span><b>Speed</b></span><span id="infospeed"></span></div>	
-									<div class="space-between"><b><span id="infovergence"></span></b><span id="infovergence2"></span></div>									
+									<div class="space-between"><b><span id="infovergence"></span></b><span id="infovergence2"></span></div>
+									<div id="infobouncediv"><span><b>Bounce</b></span><span id="infobounce"></span></div>
 								</div>
 							</div>
 						</div>						

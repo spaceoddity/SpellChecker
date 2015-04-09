@@ -3,10 +3,10 @@ body {
 }
 
 #viewport {
-	background-color: rgb(63,63,63);	
+	background-color: rgb(99,99,99);	
 	position: relative;
 	overflow: hidden;
-	font-family: Arial,sans-serif;	
+	font-family: Arial;	
 	font-size: 18px;
 	color: white;
 }
@@ -69,6 +69,28 @@ body {
 .floating_bg {
 	z-index: 1;
 	background: rgba(255,255,255,0.25);
+}
+
+.menu_bg {
+    background-color: rgb(63,63,63);
+    width: 800px;
+    height: 600px;
+}
+
+.plain_bg{
+    background-color: rgb(63,63,63);
+    width: 800px;
+    height: 600px;
+}
+
+/*Main Menu*/
+#menu_buttons {
+	position: relative;
+	top: 303px;
+}
+
+#menu_buttons button {
+	margin: 6px;
 }
 
 /* Options Menu */
@@ -154,10 +176,20 @@ body {
 }
 
 /*------------------------------------------------------------*/
-#cal_dialog {
-	background: rgb(64,64,64);
-	padding: 12px 15px 10px 15px;
+
+
+#calibrate_buttons {
+	position: relative;
+	top: 353px;	
 }
+
+#calibrate_buttons button {
+	margin: 6px;
+}
+
+
+
+
 
 .ui-dialog .ui-dialog-titlebar {
 	padding-top: 7px;
@@ -169,11 +201,12 @@ body {
 	margin: 0px;
 }
 
-#cal_dialog > div {
-	background: rgb(64,64,64);
+#cal_dialog_square {
+	background: rgb(99,99,99);
 	color: white;
 	font-family: Arial,sans-serif;	
 	font-size: 18px;
+	padding: 10px;
 }
 
 #cal_dialog canvas {
@@ -185,11 +218,11 @@ body {
 	margin-top: 5px;
 }
 
-#cal_dialog > div > div:nth-child(1) {
+#cal_dialog_square > div:nth-child(1) {
 	margin-bottom: 12px;
 }
 
-#cal_dialog > div > div:nth-child(2){
+#cal_dialog_square > div:nth-child(2){
 	margin-bottom: 20px;
 }
 
@@ -215,7 +248,14 @@ body {
 }
 
 #infomiss {
-	margin-bottom: 6px;
+	margin-bottom: 18px;
+}
+
+#infobouncediv {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .pause_padding {
@@ -234,4 +274,8 @@ body {
 
 .pause_imp {
 	font-size: 36px;
+}
+
+.pause_very_imp {
+	font-size: 48px;
 }
