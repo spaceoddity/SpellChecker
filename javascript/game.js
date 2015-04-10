@@ -1,8 +1,8 @@
 Game = {};
 //TODO: add instructions
 //TODO: add sound option maybe?
-//TODO: figure out orange calibration
-//TODO: figure out good steps for hex colors, maybe based on 5 minutes of play
+//TODO: decide starting defaults
+//TODO: add copyright?
 //TODO: check and comment code
 //TODO: put code on github
 //TODO: put code on dreamhost
@@ -494,10 +494,23 @@ Game.CalibrateDialog.set_state = function(colors){
 				start : function(){return 255;},
 				bg : function(){return S.GRAY;},
 				fg : function(result){return [0,result,result];},
-				save : function(color1, color2){S.PURPLE = color1; S.TEAL=color2;},
+				save : function(color1, color2){S.PURPLE=color1; S.TEAL=color2;},
 			},
 		},
 		rg : {
+			step1 : {
+				minmax : function(){return [127,255];},
+				start : function(){return 0;},
+				bg : function(){return S.RED2;},
+				fg : function(result){return [result,127,0];},
+			},
+			step2 : {
+				minmax : function(){return [63,191];},
+				start : function(){return 63;},
+				bg : function(color1){return color1;},
+				fg : function(result){return [0,result,0];},
+				save : function(color1, color2){S.ORANGE=color1; S.GREEN=color2;},
+			},
 		},
 	};
 
@@ -807,15 +820,29 @@ Game.Level.create_hex_graph = function(color, id, data){
 		return [x(xy[0]),y(xy[1])];
 	});
 
-	var color = d3.scale.linear()
-		.domain([0, 3])
-		.range(["white", color])
-		.interpolate(d3.interpolateLab);
+
 
 	var hexbin = d3.hexbin()
 		.size([graph_width, graph_height])
 		.radius(graph_width/20);
-
+	
+	var color_limit = (function(){
+		var max = 1;
+		var bins = hexbin(points);
+		for (i=0; i<bins.length; i++){
+			if (bins[i].length > max) {
+				max = bins[i].length;
+			}
+		}
+		return max;
+	})();
+	
+	//console.log(hexbin(points));
+	var color = d3.scale.linear()
+		.domain([0, color_limit])
+		.range(["white", color])
+		.interpolate(d3.interpolateLab);
+		
 	var svg = d3.select(id).append("svg")
 		.attr("width", graph_width)
 		.attr("height", graph_height)
@@ -1402,6 +1429,7 @@ Game.set_default_values = function(){
 		GRAY : [127,127,127],
 		BLUE : [0,0,255],
 		WHITE : [255,255,255],
+		RED2 : [255,0,0],
 		ORB_FONT_SIZE : 8,
 		ORB_FONT : "monaco, Lucida Console, monospace",
 		ORB_WIDTH : 50,
@@ -1409,16 +1437,12 @@ Game.set_default_values = function(){
 		ORB_IRIS_WIDTH : 20,
 		ORB_IRIS_LINE_WIDTH : 3,
 		ORB_PUPIL_WIDTH : 4,
-		ORB_SPEED_STEP : 20,
+		ORB_SPEED_STEP : 5,
 		ORB_SCALE_STEP : 15,
 		ORB_ROTATION_SPEED : 45, //degrees per second
 		ORB_BOUNCE_VALUES : {NORMAL: [1,1], HORIZONTAL: [1,0.1], VERTICAL: [0.1,1]},
 		HEX_CORRECT_COLOR : "darkgreen",
 		HEX_INCORRECT_COLOR : "darkred",
-
-		RED2 : [255,0,0],
-		ORANGE : [255,127,0],
-		GREEN : [0,127,0],
 
 		GAME_LENGTH : 1, //minutes
 		ORB_SEPARATION : 0,
@@ -1428,7 +1452,9 @@ Game.set_default_values = function(){
 		PURPLE : [132,0,132],
 		TEAL : [0,129,129],
 		RED : [255,0,0],
-		BLACK : [0,0,0],	
+		BLACK : [0,0,0],
+		ORANGE : [255,127,0],
+		GREEN : [0,127,0],		
 	});
 	
 	S.set_defaults({ORB_BOUNCE : S.ORB_BOUNCE_VALUES.NORMAL});
